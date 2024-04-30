@@ -26,16 +26,51 @@ body{
     padding: 100px 0 0 0;
 }
 
-.boton{
+.boton-register{
     padding: 10px;
     border-radius: 10px;
     background-color: white;
     font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 
+.boton-register:active{
+    background-color: grey;
+}
+
+.boton-register:hover{
+    background-color: grey;
+}
+
+.boton-register:focus{
+    background-color: grey;
+}
+
+.boton-login{
+    padding: 10px;
+    border-radius: 10px;
+    background-color: white;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.boton-login:active{
+    background-color: grey;
+}
+
+
+.boton-login:hover{
+     background-color: grey;
+}
+
+.boton-login:focus{
+    background-color: grey;
+}
+
 .pointer{
     font-size: 16px;
     cursor: pointer;
+    color: black;
+    text-decoration: none;
+    margin-top: 10px;
 }
 
 .aceptar{
@@ -44,7 +79,9 @@ body{
     color: black;
     border-radius: 10px;
     border: none;
-    margin-top: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-right: 20px;
 }
 
 .inputs{
@@ -57,16 +94,20 @@ body{
 ul{
     position: relative;
     align-items: center;
+    background-color: grey;
+    box-shadow: 0 0 10px;
+    padding-top: 20px;
+    margin-left: 50px;
 }
 
 ul input{
     padding: 10px;
-    margin-bottom: 10px;
-    width: 150px;
+    margin-top: 12px;
+    width: 250px;
     border-radius: 20px;
-    
     color: black;
-    border: none;
+    margin-right: 20px;
+    
 }
 
 #contenido_oculto {

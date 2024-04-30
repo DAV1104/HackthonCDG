@@ -1,3 +1,4 @@
+
 function mostrarContenido() {
     var contenido = document.getElementById("contenido_oculto");
     if (contenido.style.display === "none") {
@@ -15,6 +16,7 @@ function mostrarContenido2() {
         contenido.style.display = "none";
     }
 }
+
 
 document.getElementById('register-form').addEventListener('submit', function(event) {
     event.preventDefault(); // Prevent default form submission
