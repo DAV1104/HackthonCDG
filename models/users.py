@@ -2,12 +2,13 @@ from config.db import db, ma, app
 from sqlalchemy.orm import relationship, backref
 
 class Users(db.Model):
-    __tablename__ = "Users"
+    __tablename__ = "sers"
     
     id = db.Column(db.Integer, primary_key = True)
     nombre = db.Column(db.String(255), nullable = False)
     usuario = db.Column(db.String(255), nullable = False)
     contrseña = db.Column(db.String(255), nullable = False)
+    solicitudes = db.Column(db.Intege, db.relationship('solicitud', backref='usuario'))
     
     def __init__ (self, id, nombre, usuario, contraseña):
         self.id = id
