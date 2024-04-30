@@ -1,8 +1,11 @@
-from flask import Flask, Blueprint, request, render_template, jsonify
+from flask import Flask, Blueprint, request, render_template, jsonify, json, redirect, url_for
 from config.db import db, ma, app
+from werkzeug.security import generate_password_hash
 
-from models.users import Users, user_schema, users_schema
-from models.Citas import Citas, cita_schema, citas_schema
+from models.users import Users, UsersSchema
+
+user_schema = UsersSchema()
+users_schema = UsersSchema(many=True)
 
 ruta_user = Blueprint('route_user', __name__)
 
@@ -12,23 +15,35 @@ def indexuser():
     return render_template('')
 
 #Ruta para crear los usuarios
-@ruta_user.route('/cuser', methods=['POST'])
-def create_user():
-    nombre = request.json['nombre']
-    usuario = request.json['usuario']
-    contraseña = request.json['contraseña']
-    
-    #Si el usuario existe, no se puede crear
-    Usuario = Users.query.filter_by(usuario=usuario).first()
-    if usuario == Usuario.usuario:
-        return jsonify({ 'message': 'Este usuario ya existe'}, 400)
-    
-    new_user = Users(nombre, usuario, contraseña)
-    
-    #Se añade el nuevo usuario a la base de datos
-    db.session.add(new_user)
-    db.session.commit()
-    return jsonify({ 'message': 'Usuario agregado' }), 201
+@app.route('/register', methods=['GET', 'POST'])
+def show():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        confirm_password = request.form['confirm-password']
+
+        if username and email and password and confirm_password:
+            if password == confirm_password:
+                hashed_password = generate_password_hash(
+                    password, method='sha256')
+                try:
+                    new_user = Users(
+                        username=username,
+                        email=email,
+                        password=hashed_password,
+                    )
+
+                    db.session.add(new_user)
+                    db.session.commit()
+                except:
+                    return redirect(url_for('register.show') + '?error=user-or-email-exists')
+
+                return redirect(url_for('login.show') + '?success=account-created')
+        else:
+            return redirect(url_for('register.show') + '?error=missing-fields')
+    else:
+        return render_template('register.html')
 
 #Ruta para obtener todos los usuarios
 @ruta_user.route('/ouser', methods=['GET'])
@@ -49,7 +64,7 @@ def get_users():
 
 @ruta_user.route('/uuser/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
-    Usuario = Users.query.get(user_id)
+    Usuario = db.session.query(Users).get(user_id)
     if not Usuario:
         return jsonify({'message': 'Usuario no encontrado'}), 404
     
@@ -71,7 +86,7 @@ def update_user(user_id):
 
 @ruta_user.route('/duser/<int:user_id>', methods=['DELETE'])
 def delete_user(user_id):
-    Usuario = Users.query.get(user_id)
+    Usuario = db.session.query(Users).get(user_id)
     #Se verifica que exista este usuario
     if Usuario is None:
         return jsonify({'message': 'User no encontrado'}), 404
@@ -82,67 +97,8 @@ def delete_user(user_id):
 
 @ruta_user.route('/user/<int:user_id>', methods=['GET'])
 def get_user(user_id):
-    user = Users.query.get(user_id)
+    user = db.session.query(Users).get(user_id)
     if user:
         return jsonify({'nombre': user.nombre, 'usuario': user.usuario})
     else:
         return jsonify({'message': 'User not found'}), 404
-    
-@ruta_user.route('/addcitas/<int:user_id>/citas', methods=['POST'])
-def add_citas_to_user(user_id):
-    try:
-        # Busca un usuario existente y lo devuelve
-        user = Users.query.get(user_id)
-        if user is None:
-            return jsonify({"message": "User not found"}), 404
-        
-        # Extrae los datos de la request
-        titulo = request.json['titulo']
-        hora = request.json['hora']
-        fecha = request.json['fecha']
-        
-        if not all([titulo, fecha]):
-            return jsonify({ 'message': 'Se necesita de un titulo y una fecha'}), 400
-        
-        # Crea una nueva instancia de Citas
-        new_citas = Citas(titulo=titulo, hora=hora, fecha=fecha)
-        
-        # Añade la cita a la lista de citas del usuario
-        user.citas.append(new_citas)
-        
-        # Añade los cambios a la base de datos
-        db.session.add(new_citas)
-        db.session.commit()
-        
-        return cita_schema.jsonify(new_citas), 201
-    
-    except Exception as e:
-        return jsonify({"message": str(e)}), 500
-    
-@ruta_user.route('/gusercitas/<int:user_id>', methods=['GET'])
-def get_citas_from_user(user_id):
-    try:
-        # Verifica que el usuario exista
-        if not user_id.isdigit():
-            return jsonify({ 'message': 'ID es requerida' }), 400
-        user = Users.query.get(user_id)
-        if user is None:
-            return jsonify({ 'message': 'Este usuario no existe' }), 404
-        
-        # Filtra un usuario por la id
-        result = Citas.session.query.filter_by(usuario_id=user_id)
-        data = {}
-        
-        # Itera sobre los resultados y los devuelve en formato JSON
-        i=0
-        for cita in result:
-            i+=1
-            data[i] = {
-                'titulo': cita.titulo,
-                'fecha': cita.fecha,
-                'hora': cita.hora
-            }
-            
-        return jsonify(data)
-    except Exception as e:
-        return jsonify({ 'message': str(e)}), 500
